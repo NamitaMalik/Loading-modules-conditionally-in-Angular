@@ -1,5 +1,5 @@
 {
-  "name": "guarding-modules-in-angular",
+  "name": "loading-modules-conditionally-in-angular",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
