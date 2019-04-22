@@ -137,3 +137,14 @@ Now, you would notice, even though our `preloadingStrategy` is `PreloadAllModule
 if our `AuthGuard` returns true. You can also use a custom `preloadingStrategy` if you want to.
 
 Well, that's all for this post. Happy Learning!
+
+
+Follow Me
+---
+[Github](https://github.com/NamitaMalik)
+
+[Twitter](https://twitter.com/namita13_04)
+
+[LinkedIn](https://in.linkedin.com/in/namita-malik-a7885b23)
+
+[More Blogs By Me](https://namitamalik.github.io/)
