@@ -1,27 +1,139 @@
 # Loading Modules Conditionally in Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.8.
+One of the very common features of Admin dashboard applications is **Access Control**. 
+This is usually achieved through a set of permissions. A feature is displayed or hidden from the user depending upon the set of permissions he/she has.
+One can build a service or a directive or both to achieve this.
 
-## Development server
+Now, what if user should doesn't have permission to access the complete module? We can off course hide 
+all the components belonging to that module from user but wouldn't it be great if we don't even load the 
+entire module for that user.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+In one of my previous blogs, I had discussed about lazy loading angular modules using routing. 
+So let's now extend this feature a bit more and load the modules conditionally i.e. as per user access.
 
-## Code scaffolding
+I have a simple Angular application that has 3 modules:
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+1. `AppModule` - This is the root module of the application.
+2. `TasksModule` - Child Module. Comprises of `TasksComponent` and `TasksListComponent`.
+3. `UsersModule` - Child Module. Comprises of `UsersComponent` and `UsersListComponent`.
 
-## Build
+Now, we want only users with permission `View Users` to be able to access users related info.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+First, let's quickly review over `AppRoutingModule`. It looks like this:
 
-## Running unit tests
+```TypeScript
+import {NgModule} from '@angular/core';
+import { PreloadAllModules, RouterModule } from '@angular/router';
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+@NgModule({
+  imports: [
+    RouterModule.forRoot([
+      {path: '', redirectTo: '/tasks', pathMatch: 'full'},
+      {path: 'tasks', loadChildren: './tasks/tasks.module#TasksModule'},
+      {path: 'users', loadChildren: './users/users.module#UsersModule', data: {permission: 'View Users'}
+      }
+    ], {
+      preloadingStrategy: PreloadAllModules
+    })
+  ],
+  exports: [
+    RouterModule
+  ]
+})
+export class AppRoutingModule {}
+```
 
-## Running end-to-end tests
+Let's create a service which will make a `http request` and fetch the permissions for the logged in user.
+For demo purposes, I have taken a hardcoded json in my assets folder. My `app.service.ts` looks as given below:
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+```TypeScript
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
-## Further help
+@Injectable({
+  providedIn: 'root'
+})
+export class AppService {
+  availablePermissions: any[];
+  constructor(private http: HttpClient) { }
+  public load() {
+    return new Promise((resolve) => {
+      this.http.get<any>('assets/permissions.json')
+        .subscribe( (response) => {
+        this.availablePermissions = response.availablePermissions;
+        resolve(true);
+      });
+    });
+  }
+}
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+Now, let's move to our `AppModule`. With respect to this demo, I would want permissions for a user to be 
+available when the app is initialized, therefore I do the following:
+
+```
+ providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (appService: AppService) => () => appService.load(),
+      deps: [AppService],
+      multi: true
+    }
+  ],
+ ```
+ 
+Now, next step is to add a `Route guard` to our application. A route guard supports multiple guard interfaces.
+For our case we would need to implement `CanLoad` interface which will mediate navigation to `UsersModule` asynchronously.
+
+```TypeScript
+import { Injectable } from '@angular/core';
+import { CanLoad, Route } from '@angular/router';
+import { AppService } from './app.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanLoad {
+  constructor(private appService: AppService) {
+  }
+
+  canLoad(route: Route): boolean {
+    return this.appService.availablePermissions.indexOf(route.data.permission) !== -1;
+  }
+}
+```
+
+In the above code, we simple created an `AuthGuard` class which implements `CanLoad` interface. In `canLoad` 
+function we basically check if the permission needed to access `UsersModule` is available to the user and returns 
+a boolean accordingly.
+
+Now, the last part. We need do a minor addition in our `AppRoutingModule` where we have configured our routes.
+We will add a `canLoad` property to our route definition for `UsersModule` and provide our `AuthGuard` to it.
+
+```TypeScript
+import {NgModule} from '@angular/core';
+import { PreloadAllModules, RouterModule } from '@angular/router';
+import { AuthGuard } from './auth.guard';
+
+@NgModule({
+  imports: [
+    RouterModule.forRoot([
+      {path: '', redirectTo: '/tasks', pathMatch: 'full'},
+      {path: 'tasks', loadChildren: './tasks/tasks.module#TasksModule'},
+      {path: 'users', loadChildren: './users/users.module#UsersModule', data: {permission: 'View Users'},
+        canLoad: [AuthGuard]}
+    ], {
+      preloadingStrategy: PreloadAllModules
+    })
+  ],
+  exports: [
+    RouterModule
+  ]
+})
+export class AppRoutingModule {}
+```
+
+Now, you would notice, even though our `preloadingStrategy` is `PreloadAllModules`, it will load `UsersModule` 
+if our `AuthGuard` returns true. You can also use a custom `preloadingStrategy` if you want to.
+
+Well, that's all for this post. Happy Learning!
