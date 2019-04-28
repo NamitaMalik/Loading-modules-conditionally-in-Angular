@@ -5,7 +5,6 @@ import { AuthGuard } from './auth.guard';
 @NgModule({
   imports: [
     RouterModule.forRoot([
-      {path: '', redirectTo: '/tasks', pathMatch: 'full'},
       {path: 'tasks', loadChildren: './tasks/tasks.module#TasksModule'},
       {path: 'users', loadChildren: './users/users.module#UsersModule', data: {permission: 'View Users'},
         canLoad: [AuthGuard]}
