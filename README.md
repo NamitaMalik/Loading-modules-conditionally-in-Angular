@@ -105,7 +105,8 @@ export class AuthGuard implements CanLoad {
 
 In the above code, we simple created an `AuthGuard` class which implements `CanLoad` interface. In `canLoad` 
 function we basically check if the permission needed to access `UsersModule` is available to the user and returns 
-a boolean accordingly.
+a boolean accordingly. You can also return an observable of boolean from the `canLoad` function, which is very
+likely in real world applications.
 
 Now, the last part. We need do a minor addition in our `AppRoutingModule` where we have configured our routes.
 We will add a `canLoad` property to our route definition for `UsersModule` and provide our `AuthGuard` to it.
