@@ -1,0 +1,10 @@
+.nav {
+  display: flex;
+}
+.nav > li {
+  list-style: none;
+  padding: 2px
+}
+.nav > li a {
+  text-decoration: none;
+}

@@ -69,7 +69,7 @@ export class AppService {
 ```
 
 Now, let's move to our `AppModule`. With respect to this demo, I would want permissions for a user to be 
-available when the app is initialized, therefore I do the following:
+available before the app is initialized, therefore I do the following:
 
 ```
  providers: [
