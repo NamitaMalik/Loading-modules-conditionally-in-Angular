@@ -134,8 +134,12 @@ import { AuthGuard } from './auth.guard';
 export class AppRoutingModule {}
 ```
 
+![Users-Module-Not-Loading](https://raw.githubusercontent.com/NamitaMalik/Loading-modules-conditionally-in-Angular/master/src/assets/Preloaded_Module.gif)
+
 Now, you would notice, even though our `preloadingStrategy` is `PreloadAllModules`, it will load `UsersModule` 
-if our `AuthGuard` returns true. You can also use a custom `preloadingStrategy` if you want to.
+only when our `AuthGuard` returns true. You can also use a custom `preloadingStrategy` if you want to.
+
+![Uses-Module-Not-Loading-On-PreloadStrategy](https://raw.githubusercontent.com/NamitaMalik/Loading-modules-conditionally-in-Angular/master/src/assets/Preloaded_Module.gif)
 
 Well, that's all for this post. Happy Learning!
 
